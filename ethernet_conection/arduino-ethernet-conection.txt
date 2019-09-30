@@ -1,0 +1,83 @@
+/* ==================================================================================================================================================
+         Project: ArduinoBasics Web Data Server 
+          Author: Scott C
+         Created: 15th Nov 2015
+     Arduino IDE: 1.6.4
+         Website: http://arduinobasics.blogspot.com/p/arduino-basics-projects-page.html
+     Description: This Arduino sketch will set up a simple web data server which will send Analog Pin readings
+                  to any web browser that connects to it. It will send the data in JSON format.
+                  Some sections code are borrowed from elsewhere - including:
+                   - the WIZnet Ethernet library "WebServer" example sketch - https://github.com/Wiznet/WIZ_Ethernet_Library
+                       - authors: David A.Mellis and Tom Igoe
+                   - the idea to use PORT 8081 was taken from this page: http://www.makeuseof.com/tag/give-your-arduino-project-its-own-mini-webserver-with-an-ethernet-shield/
+                       - author: James Bruce
+                   - and this forum post by Mario Cordeiro - helped to get me on the right track with the JSON response to the Web Browser.
+                     http://arduino.stackexchange.com/questions/11696/get-json-data-from-arduino-with-ajax
+Pin Availability:  Wiznet ioShield-A  - connects to pins D2, D4, D7, D10, GND, 
+                                        and IOREF, RESET, 5V, GND, GND
+            Note: Arduino Ethernet shield attached to pins 10, 11, 12, 13  - Arduino Ethernet shield
+                  Analog pins A0, A1, A2, A3, A4 and A5 are available when using the ioShield-A or the Arduino Ethernet Shield.
+===================================================================================================================================================== */
+
+#include <SPI.h>                                    //Include these libraries
+#include <Ethernet.h>                               //Make sure to modify the 5100.h file to suit the Ethernet chip on your shield (eg. W5500) as per the gitHub instructions:  https://github.com/Wiznet/WIZ_Ethernet_Library
+
+byte mac[] = {0x00, 0x08, 0xDC, 0x1C, 0xB8, 0x4C};  //Enter the MAC address that is on your Ethernet shield (sticker) - eg. 00-08-DC-1C-B8-4C  (but use hexidecimal format eg. 0x00)
+
+IPAddress ip(10, 1, 1, 99);                         //The IP address that you will give the Server - will depend on your local network range
+EthernetServer server(8081);                        //The port to listen for Web Browsers - the default is 80, but some routers will block this port.. so change to 8081.
+
+//*************************************************************************************************
+// setup function
+//=================================================================================================
+void setup() {
+  Serial.begin(9600);                               //Begin Serial communication (baud rate = 9600).
+
+  Ethernet.begin(mac, ip);                          //Initialise the ethernet library and network settings: https://www.arduino.cc/en/Reference/EthernetBegin
+  server.begin();                                   //Tell the server to begin listening for incoming connections (on port 8081 in this example)
+  Serial.print("Server IP address : ");
+  Serial.println(Ethernet.localIP());               //If you see the IP address within the Serial monitor - you know that the server started successfully
+}
+
+
+//*************************************************************************************************
+// loop function
+//=================================================================================================
+void loop() {
+  EthernetClient client = server.available();      // assign any newly connected Web Browsers to the "client" variable.
+  
+  if(client.connected()){
+    Serial.println("Client Connected");
+    
+    while(client.available()){
+      //Serial.write(client.read());               // Uncomment if you want to write the request from the Browser (CLIENT) to the SERIAL MONITOR (and comment out the next line)
+      client.read();                               // This line will clear the communication buffer between the client and the server.
+    }
+    
+    //Send the Server response header back to the browser.
+    client.println("HTTP/1.1 200 OK");           // This tells the browser that the request to provide data was accepted
+    client.println("Access-Control-Allow-Origin: *");  //Tells the browser it has accepted its request for data from a different domain (origin).
+    client.println("Content-Type: application/json;charset=utf-8");  //Lets the browser know that the data will be in a JSON format
+    client.println("Server: Arduino");           // The data is coming from an Arduino Web Server (this line can be omitted)
+    client.println("Connection: close");         // Will close the connection at the end of data transmission.
+    client.println();                            // You need to include this blank line - it tells the browser that it has reached the end of the Server reponse header.
+    
+    //Transmit the Analog Readings to the Web Browser in JSON format
+    //Example Transmission: [{"key":0, "value":300},{"key":1, "value":320},{"key":2, "value":143},{"key":3, "value":24},{"key":4, "value":760},{"key":5, "value":470}]
+    client.print("[");                           // This is tha starting bracket of the JSON data
+    for(int i=0; i<6; i++){                      // Transmit analog readings from Analog Pin 0 to Analog Pin 5
+      client.print("{\"key\": ");
+      client.print(i);                           // The key for Analog pin 0 (A0) is equal to 0   eg.  "key":0
+      client.print(", \"value\": ");
+      client.print(analogRead(i));               // The value is equal to the Analog reading from that pin.  eg. "value":300
+      if(i==5){
+        client.print("}");                       // The last value will end with a bracket (without a comma)
+      } else {
+        client.print("},");                      // All other values will have a comma after the bracket.
+      }
+    }
+    client.println("]");                         // This is the final bracket of the JSON data
+    client.stop();                               // This method terminates the connection to the client
+    Serial.println("Client has closed");         // Print the message to the Serial monitor to indicate that the client connection has closed.
+  }
+}
