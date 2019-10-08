@@ -47,15 +47,17 @@
 #include <EEPROM.h>
 #include "Button.h"
 
-//TEMP SENSOR
-#include "DHT.h"
+//TEMP SENSOR LIBRARIES
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
 
 //TEMP SENSOR KIND & PIN
 #define DHTPIN 11
 #define DHTTYPE DHT22
 
 //SENSOR TEMP SET
-DHT dht(DHTPIN, DHTTYPE);
+DHT_Unified dht(DHTPIN, DHTTYPE);
 
 //LED SETUP
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -64,29 +66,20 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 const byte led = 6;
 byte pin6_level = 0;
 
-const byte pinA4 = A4;
-byte pinA4_value = 0;
-
-const byte pinA5 = A5;
-byte pinA5_value = 0;
-
-// The analog reading sample period in seconds.
-// It is later overwritten by it's EEPROM value.
-unsigned short sample_period = 2;
-
 // Text used for indication for the save lines.
 char* pain_level_saved;
 char* pain_location_saved;
 char* sync_saved;
+//float temp_level_saved;
 
 //Var parts
 String parts = "";
 
 //Vars for temp device
 float tempDevice = 0;
-float t;
-float h;
+uint32_t delayMS;
 
+//Pins setup
 const bool pullup = true;
 Button left(A0, pullup);
 Button right(7, pullup);
@@ -108,8 +101,8 @@ bool stateDataCloud = false;
 LiquidLine back_line(11, 1, "/BACK");
 
 //Welcome
-LiquidLine welcome_line1(1, 0, "Hilda Toys ", LIQUIDMENU_VERSION);
-LiquidLine welcome_line2(1, 1, tempDevice);
+LiquidLine welcome_line1(1, 0, "Hilda`s World", LIQUIDMENU_VERSION);
+LiquidLine welcome_line2(1, 1, "Hola Diana");
 
 LiquidScreen welcome_screen(welcome_line1, welcome_line2);
 
@@ -117,11 +110,12 @@ LiquidScreen welcome_screen(welcome_line1, welcome_line2);
 LiquidLine main_line_1(0, 0, "/PAIN LEVEL");
 LiquidLine main_line_2(0, 1, "/PAIN LOCATION");
 LiquidLine main_line_3(0, 2, "/SYNC DATA");
+LiquidLine main_line_4(0, 3, "/TEMP DATA");
 
 LiquidScreen main_io_screen;
 
 // This is the first menu.
-LiquidMenu main_menu(lcd, welcome_screen, main_io_screen, 1);
+LiquidMenu main_menu(lcd, welcome_screen, main_io_screen);
 
 //Pain level menu
 LiquidLine pain_level_line_title(0, 0, "Pain level");
@@ -159,8 +153,19 @@ LiquidScreen sync_secondary_screen(sync_save_line, back_line);
 // This is the four menu.
 LiquidMenu sync_menu(lcd, sync_screen, sync_secondary_screen);
 
+//Pain level menu
+LiquidLine temp_line_title(0, 0, "Temperature");
+LiquidLine temp_line_value(0, 1, "C: ", tempDevice);
+LiquidScreen temp_screen(temp_line_title, temp_line_value);
+
+LiquidLine temp_save_line(0, 0, "Save");
+LiquidScreen temp_secondary_screen(temp_save_line, back_line);
+
+// This is the fifth menu.
+LiquidMenu temp_menu(lcd, temp_screen, temp_secondary_screen);
+
 // This is the menu system
-LiquidSystem menu_system(main_menu, pain_level_menu, pain_location_menu, sync_menu);
+LiquidSystem menu_system(main_menu, pain_level_menu, pain_location_menu, sync_menu, temp_menu);
 
 // Checks all the buttons.
 void buttonsCheck() {
@@ -181,7 +186,7 @@ void buttonsCheck() {
   }
 }
 
-// goto functions
+// go to functions
 // Callback function that will be attached to back_line.
 void go_back() {
   menu_system.change_menu(main_menu);
@@ -199,13 +204,8 @@ void goto_sync_menu() {
   menu_system.change_menu(sync_menu);
 }
 
-// function for temp sensor
-void temp_device(){
-  h = dht.readHumidity();
-  t = dht.readTemperature();
-
-  tempDevice = dht.computeHeatIndex(t,h, false);
-  delay(3000);
+void goto_temp_menu() {
+  menu_system.change_menu(temp_menu);
 }
 
 // Pain led level
@@ -285,27 +285,54 @@ void decrease_led_level() {
 void pain_location_1(){
   parts = "Local_01";
   pain_location_saved = (char*)"  ";
+  Serial.println(parts);
   }
 void pain_location_2(){
   parts = "Local_02";
   pain_location_saved = (char*)"  ";
+  Serial.println(parts);
   }
 void pain_location_3(){
   parts = "Local_03";
   pain_location_saved = (char*)"  ";
+  Serial.println(parts);
   }
 void pain_location_4(){
   parts = "Local_04";
   pain_location_saved = (char*)"  ";
+  Serial.println(parts);
   }
 void pain_location_5(){
   parts = "Local_05";
   pain_location_saved = (char*)"  ";
+  Serial.println(parts);
   }
 
 // function for sync data in cloud
 void send_data_cloud(){
   stateDataCloud = false;
+}
+
+// function for temp sensor
+void temp_device() {
+
+  // Delay between measurements.
+  sensor_t sensor;
+  delayMS = sensor.min_delay / 1000;
+
+  // Get temperature event and print its value.
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+  }
+  else {
+    tempDevice = event.temperature;
+    //temp_level_saved = (char*)"  ";
+    Serial.print(F("Temperature: "));
+    Serial.print(event.temperature);
+    Serial.println(F("°C"));
+  }
 }
 
 // function for save data in mem
@@ -324,22 +351,33 @@ void save_sync_state() {
   sync_saved = (char*)" *";
 }
 
+//void save_temp_state() {
+  //EEPROM.put(12, tempDevice);
+  //tempDevice = (char*)" *";
+//}
+
 void setup() {
 
-  Serial.begin(250000);
+  // Serial init
+  Serial.begin(9600);
 
+  // dht begin
+  dht.begin();
+
+  // lcd begin
+  lcd.begin();
+  lcd.backlight();
+
+  // led mode & set
   pinMode(led, OUTPUT);
+  analogWrite(led, pin6_level);
 
   // Reads the values recorded in the EEPROM
   EEPROM.get(9, pin6_level);
   EEPROM.put(10, parts);
   EEPROM.get(11, stateDataCloud);
-
-  analogWrite(led, pin6_level);
-
-  lcd.begin();
-  lcd.backlight();
-
+  //EEPROM.get(12, tempDevice);
+  
   back_line.set_focusPosition(Position::LEFT);
 
   back_line.attach_function(1, go_back);
@@ -349,25 +387,40 @@ void setup() {
   main_io_screen.add_line(main_line_1);
   main_io_screen.add_line(main_line_2);
   main_io_screen.add_line(main_line_3);
-
+  main_io_screen.add_line(main_line_4);
+   
   // Attaching a function to the lines is required for scrolling to work.
   main_line_1.attach_function(1, goto_pain_level_menu);
   main_line_1.attach_function(2, goto_pain_level_menu);
+
   main_line_2.attach_function(1, goto_pain_location_menu);
   main_line_2.attach_function(2, goto_pain_location_menu);
+
   main_line_3.attach_function(1, goto_sync_menu);
   main_line_3.attach_function(2, goto_sync_menu);
+
+  main_line_4.attach_function(1, goto_temp_menu);
+  main_line_4.attach_function(2, goto_temp_menu);
 
   //  Items for scrolling menu
   main_io_screen.set_displayLineCount(2);
 
-  // functions secondaries menus
+  //Pain led level menu
+  pain_level_line_value.attach_function(increase, increase_led_level);
+  pain_level_line_value.attach_function(decrease, decrease_led_level);
+
+  // functions for all secondaries menus
   pain_level_save_line.attach_function(1, save_pain_level);
   pain_level_save_line.attach_function(2, save_pain_level);
+
   pain_location_save_line.attach_function(1, save_pain_location);
   pain_location_save_line.attach_function(2, save_pain_location);
+
   sync_save_line.attach_function(1, save_sync_state);
   sync_save_line.attach_function(2, save_sync_state);
+
+  //temp_save_line.attach_function(1, save_temp_state);
+  //temp_save_line.attach_function(2, save_temp_state);
 
   // Add more "lines" than the display has. The extra will be scrolled.
   pain_location_screen.add_line(pain_location_line_1);
@@ -391,24 +444,15 @@ void setup() {
   //  Items for scrolling menu
   pain_location_screen.set_displayLineCount(2);
 
-  //Pain led level menu
-  pain_level_line_value.attach_function(increase, increase_led_level);
-  pain_level_line_value.attach_function(decrease, decrease_led_level);
-
+  // menu system
   menu_system.update();
 
 }
 
 void loop() {
-  buttonsCheck();
-  //temp_device();
 
-  static unsigned long lastMillis_sample = 0;
-  if (millis() - lastMillis_sample > (sample_period * 1000)) {
-    lastMillis_sample = millis();
-    pinA4_value = analogRead(pinA4);
-    pinA5_value = analogRead(pinA5);
-    menu_system.update();
-  }
+  buttonsCheck();
+  temp_device();
+
 
 }
