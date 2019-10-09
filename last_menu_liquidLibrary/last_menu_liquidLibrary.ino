@@ -69,7 +69,7 @@ byte pin6_level = 0;
 // Text used for indication for the save lines.
 char* pain_level_saved;
 char* pain_location_saved;
-char* sync_saved;
+//char* sync_saved;
 //float temp_level_saved;
 
 //Var parts
@@ -101,7 +101,7 @@ bool stateDataCloud = false;
 LiquidLine back_line(11, 1, "/BACK");
 
 //Welcome
-LiquidLine welcome_line1(1, 0, "Hilda`s World", LIQUIDMENU_VERSION);
+LiquidLine welcome_line1(1, 0, "Hilda`s World");
 LiquidLine welcome_line2(1, 1, "Hola Diana");
 
 LiquidScreen welcome_screen(welcome_line1, welcome_line2);
@@ -109,7 +109,7 @@ LiquidScreen welcome_screen(welcome_line1, welcome_line2);
 // Scroll main menu
 LiquidLine main_line_1(0, 0, "/PAIN LEVEL");
 LiquidLine main_line_2(0, 1, "/PAIN LOCATION");
-LiquidLine main_line_3(0, 2, "/SYNC DATA");
+//LiquidLine main_line_3(0, 2, "/SYNC DATA");
 LiquidLine main_line_4(0, 3, "/TEMP DATA");
 
 LiquidScreen main_io_screen;
@@ -143,15 +143,15 @@ LiquidScreen pain_location_secondary_screen(pain_location_save_line, back_line);
 LiquidMenu pain_location_menu(lcd, pain_location_screen, pain_location_secondary_screen);
 
 //Sync data menu
-LiquidLine sync_line_title(0, 0, "Sync data");
-LiquidLine sync_line_value(0, 1, "Success: ", stateDataCloud);
-LiquidScreen sync_screen(sync_line_title, sync_line_value);
+//LiquidLine sync_line_title(0, 0, "Sync data");
+//LiquidLine sync_line_value(0, 1, "Success: ", stateDataCloud);
+//LiquidScreen sync_screen(sync_line_title, sync_line_value);
 
-LiquidLine sync_save_line(0, 0, "Save", sync_saved);
-LiquidScreen sync_secondary_screen(sync_save_line, back_line);
+//LiquidLine sync_save_line(0, 0, "Save", sync_saved);
+//LiquidScreen sync_secondary_screen(sync_save_line, back_line);
 
 // This is the four menu.
-LiquidMenu sync_menu(lcd, sync_screen, sync_secondary_screen);
+//LiquidMenu sync_menu(lcd, sync_screen, sync_secondary_screen);
 
 //Pain level menu
 LiquidLine temp_line_title(0, 0, "Temperature");
@@ -165,7 +165,7 @@ LiquidScreen temp_secondary_screen(temp_save_line, back_line);
 LiquidMenu temp_menu(lcd, temp_screen, temp_secondary_screen);
 
 // This is the menu system
-LiquidSystem menu_system(main_menu, pain_level_menu, pain_location_menu, sync_menu, temp_menu);
+LiquidSystem menu_system(main_menu, pain_level_menu, pain_location_menu, temp_menu);
 
 // Checks all the buttons.
 void buttonsCheck() {
@@ -200,9 +200,9 @@ void goto_pain_location_menu() {
   menu_system.change_menu(pain_location_menu);
 }
 
-void goto_sync_menu() {
-  menu_system.change_menu(sync_menu);
-}
+//void goto_sync_menu() {
+  //menu_system.change_menu(sync_menu);
+//}
 
 void goto_temp_menu() {
   menu_system.change_menu(temp_menu);
@@ -309,9 +309,9 @@ void pain_location_5(){
   }
 
 // function for sync data in cloud
-void send_data_cloud(){
-  stateDataCloud = false;
-}
+//void send_data_cloud(){
+  //stateDataCloud = false;
+//}
 
 // function for temp sensor
 void temp_device() {
@@ -346,10 +346,10 @@ void save_pain_location() {
   pain_location_saved = (char*)" *";
 }
 
-void save_sync_state() {
-  EEPROM.put(11, stateDataCloud);
-  sync_saved = (char*)" *";
-}
+//void save_sync_state() {
+  //EEPROM.put(11, stateDataCloud);
+  //sync_saved = (char*)" *";
+//}
 
 //void save_temp_state() {
   //EEPROM.put(12, tempDevice);
@@ -375,9 +375,9 @@ void setup() {
   // Reads the values recorded in the EEPROM
   EEPROM.get(9, pin6_level);
   EEPROM.put(10, parts);
-  EEPROM.get(11, stateDataCloud);
+  //EEPROM.get(11, stateDataCloud);
   //EEPROM.get(12, tempDevice);
-  
+
   back_line.set_focusPosition(Position::LEFT);
 
   back_line.attach_function(1, go_back);
@@ -386,9 +386,9 @@ void setup() {
   // Add more "lines" than the display has. The extra will be scrolled.
   main_io_screen.add_line(main_line_1);
   main_io_screen.add_line(main_line_2);
-  main_io_screen.add_line(main_line_3);
+  //main_io_screen.add_line(main_line_3);
   main_io_screen.add_line(main_line_4);
-   
+
   // Attaching a function to the lines is required for scrolling to work.
   main_line_1.attach_function(1, goto_pain_level_menu);
   main_line_1.attach_function(2, goto_pain_level_menu);
@@ -396,8 +396,8 @@ void setup() {
   main_line_2.attach_function(1, goto_pain_location_menu);
   main_line_2.attach_function(2, goto_pain_location_menu);
 
-  main_line_3.attach_function(1, goto_sync_menu);
-  main_line_3.attach_function(2, goto_sync_menu);
+  //main_line_3.attach_function(1, goto_sync_menu);
+  //main_line_3.attach_function(2, goto_sync_menu);
 
   main_line_4.attach_function(1, goto_temp_menu);
   main_line_4.attach_function(2, goto_temp_menu);
@@ -416,8 +416,8 @@ void setup() {
   pain_location_save_line.attach_function(1, save_pain_location);
   pain_location_save_line.attach_function(2, save_pain_location);
 
-  sync_save_line.attach_function(1, save_sync_state);
-  sync_save_line.attach_function(2, save_sync_state);
+  //sync_save_line.attach_function(1, save_sync_state);
+  //sync_save_line.attach_function(2, save_sync_state);
 
   //temp_save_line.attach_function(1, save_temp_state);
   //temp_save_line.attach_function(2, save_temp_state);

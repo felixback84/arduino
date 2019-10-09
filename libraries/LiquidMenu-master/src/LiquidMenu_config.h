@@ -14,7 +14,7 @@ used in the library, also configures the debugging messages.
  * @{
  */
 #define LiquidCrystal_LIBRARY (1)
-#define LiquidCrystal_I2C_LIBRARY (2)
+//#define LiquidCrystal_I2C_LIBRARY (2)
 //!@}
 
 
@@ -40,10 +40,10 @@ used in the library, also configures the debugging messages.
  * @see https://github.com/johnrickman/LiquidCrystal_I2C
  * @{
  */
- #define LIQUIDMENU_LIBRARY LiquidCrystal_I2C_LIBRARY
-#include <LiquidCrystal_I2C.h>
-#define DisplayClass LiquidCrystal_I2C
-#define I2C true
+//#define LIQUIDMENU_LIBRARY LiquidCrystal_I2C_LIBRARY
+//#include <LiquidCrystal_I2C.h>
+//#define DisplayClass LiquidCrystal_I2C
+//#define LiquidCrystal_I2C false
 //!@}
 
 /*!
@@ -75,3 +75,5 @@ const uint8_t MAX_MENUS = 8; ///< @note Default: 8
 
 // Turns the debugging messages on or off.
 #define LIQUIDMENU_DEBUG false ///< @note Default: false
+
+
