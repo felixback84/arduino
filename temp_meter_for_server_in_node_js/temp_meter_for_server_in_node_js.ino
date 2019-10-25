@@ -93,7 +93,7 @@ void loop() {
   oled.setTextColor(WHITE);
   oled.setCursor(0, 0);     
   oled.setTextSize(1);
-  oled.print("Hola, la temperatira de hoy es:"); 
+  oled.print("Hola, la temperatura de hoy es:"); 
   oled.setCursor (10, 30); 
   oled.setTextSize(2);
   oled.print(hic);  
