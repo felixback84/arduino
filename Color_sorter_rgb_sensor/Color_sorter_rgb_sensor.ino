@@ -5,11 +5,12 @@
  */
 
 
-#define S0 2
-#define S1 3
-#define S2 12
-#define S3 13
-#define sensorOut 8
+// RGB SENSOR PINS SET
+#define S0 5
+#define S1 6
+#define S2 7
+#define S3 9
+#define sensorOut 10
 
 int frequency = 0;
 int color=0;
@@ -72,12 +73,12 @@ int readColor() {
   Serial.println("  ");
   delay(50);
 
-  if(R<75 & R>60 & G<255 & G>250){
+  if(R<85 & R>60 & G<265 & G>250){
     color = 1; // Red
     Serial.println("red");
     delay(500);
   }
-  if(G<160 & G>150 & B<160 &B>150){
+  if(G<165 & G>155 & B<175 &B>160){
     color = 2; // Orange
     Serial.println("orange");
     delay(500);
@@ -87,17 +88,17 @@ int readColor() {
     Serial.println("green");
     delay(500);
   }
-  if(R<55 & R>40 & G<75 & G>60){
+  if(R<75 & R>40 & G<110 & G>90){
     color = 4; // Yellow
     Serial.println("yellow");
     delay(500);
   }
-  if(R<170 & R>155 & G<320 & G>305){
+  if(R<175 & R>155 & G<325 & G>305){
     color = 5; // Brown
     Serial.println("brown");
     delay(500);
   }
-  if (G<300 & G>280 & B<145 &B>130){
+  if (G<315 & G>280 & B<155 &B>130){
     color = 6; // Blue
     Serial.println("blue");
     delay(500);
@@ -107,7 +108,7 @@ int readColor() {
     Serial.println("white");
     delay(500);
   }
-  if (R<410 & R>390 & B<270 &B>250){
+  if (R<450 & R>390 & B<280 &B>250){
     color = 8; // black
     Serial.println("black");
     delay(500);

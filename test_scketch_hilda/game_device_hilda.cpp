@@ -8,7 +8,7 @@
 #include "DHT.h"
 
 //TEMP SENSOR KIND, PIN & INIT
-#define DHTPIN 9
+#define DHTPIN 4
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -31,7 +31,7 @@ Adafruit_SSD1306 oled(ANCHO, ALTO, &Wire, OLED_RESET);
 #endif
 
 // Which pin on the Arduino is connected to the NeoPixels?
-#define PIN 1 // On Trinket or Gemma, suggest changing this to 1
+#define PIN 5 // On Trinket or Gemma, suggest changing this to 1
 
 // How many NeoPixels are attached to the Arduino?
 #define NUMPIXELS 24 // Popular NeoPixel ring size
@@ -40,11 +40,11 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 10 // Time (in milliseconds) to pause between pixels
 
 // RGB SENSOR PINS SET
-#define S0 3
-#define S1 4
-#define S2 12
-#define S3 13
-#define sensorOut 8
+#define S0 11
+#define S1 12
+#define S2 8
+#define S3 9
+#define sensorOut 10
 
 //VARS FOR SENSOR RGB
 int frequency = 0;
@@ -53,9 +53,9 @@ String nameColor = "";
 //char* iconPart = [];
 
 //ROTATORY ENCODER
-#define outputA 5
-#define outputB 6
-#define outputC 7
+#define outputA 2
+#define outputB 3
+#define outputC 1
 
 //VARS FOR ENCODER
 int counter = 0; 
@@ -116,7 +116,8 @@ void loop(){
 
   if(counter == 27 & digitalRead(outputC) == LOW){
     readColor();
-          
+    delay(1000);
+    //ledColorOn();      
   }
   
 }
@@ -224,87 +225,78 @@ int readColor() {
   if(R<85 & R>60 & G<265 & G>250){
     color = 1; // Red
     Serial.println("red");
-    delay(3000);
+    delay(500);
   }
   if(G<165 & G>155 & B<175 &B>160){
     color = 2; // Orange
     Serial.println("orange");
-    delay(3000);
+    delay(500);
   }
   if(R<130 & R>110 & G<95 & G>80){
     color = 3; // Green
     Serial.println("green");
-    delay(3000);
+    delay(500);
   }
   if(R<55 & R>40 & G<75 & G>60){
     color = 4; // Yellow
     Serial.println("yellow");
-    delay(3000);
+    delay(500);
   }
   if(R<175 & R>155 & G<325 & G>305){
     color = 5; // Brown
     Serial.println("brown");
-    delay(3000);
+    delay(500);
   }
   if (G<315 & G>280 & B<155 &B>130){
     color = 6; // Blue
     Serial.println("blue");
-    delay(3000);
+    delay(500);
   }
   if (G<45 & G>35 & G<45 &G>35){
     color = 7; // white
     Serial.println("white");
-    delay(3000);
+    delay(500);
   }
   if (R<450 & R>390 & B<280 &B>250){
     color = 8; // black
     Serial.println("black");
-    delay(3000);
+    delay(500);
   }
   return color;  
 }
 
-//Custom Function - ledColorOn()
+/*// Custom Function - ledColorOn()
 void ledColorOn() {
 
-  if(counter == 27){
-    printLedRGB( 255, 255, 255); 
-    delay(3000);
-    } 
+  color = readColor();
+  //delay(100); 
   
   switch (color) {
     
     case 0:
     printLedRGB( 0, 0, 0); // non
-    delay(3000);
     break;
     case 1:
     printLedRGB( 255, 0, 0); // red
-    delay(3000);
     break;
     case 2:
     printLedRGB( 255, 120, 0); // orange
-    delay(3000);
     break;
     case 3:
     printLedRGB( 20, 255, 0); // green
-    delay(3000);
     break;
     case 4:
     printLedRGB( 255, 240, 0); // yellow
-    delay(3000);
     break;
     case 5:
     printLedRGB( 85, 65, 0); // brown
-    delay(3000);
     break; 
     case 6:
     printLedRGB( 0, 60, 255); // blue
-    delay(3000);
     break;   
   }
   
-}
+}*/
 
 // Custom Function - printLedRGB()
 void printLedRGB(int red_light_value, int green_light_value, int blue_light_value) {
@@ -321,17 +313,17 @@ void printLedRGB(int red_light_value, int green_light_value, int blue_light_valu
 
   } 
 
-//  // Print in the serial Monitor
-//  //Serial.println(nameColor);
-//  // Print in oled color results
-//  oled.clearDisplay();
-//  oled.setTextColor(WHITE);
-//  oled.setCursor(0, 0);     
-//  oled.setTextSize(1);
-//  oled.print("El color es:"); 
-//  oled.setCursor (10, 30); 
-//  oled.setTextSize(2);
-//  oled.print(nameColor);
-//  //oled.print(iconPart);
-//  oled.display();
+  // Print in the serial Monitor
+  //Serial.println(nameColor);
+  // Print in oled color results
+  oled.clearDisplay();
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 0);     
+  oled.setTextSize(1);
+  oled.print("El color es:"); 
+  oled.setCursor (10, 30); 
+  oled.setTextSize(2);
+  oled.print(nameColor);
+  //oled.print(iconPart);
+  oled.display();
 }

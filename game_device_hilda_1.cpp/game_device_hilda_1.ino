@@ -8,7 +8,7 @@
 #include "DHT.h"
 
 //TEMP SENSOR KIND, PIN & INIT
-#define DHTPIN 4
+#define DHTPIN 9
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -31,7 +31,7 @@ Adafruit_SSD1306 oled(ANCHO, ALTO, &Wire, OLED_RESET);
 #endif
 
 // Which pin on the Arduino is connected to the NeoPixels?
-#define PIN 5 // On Trinket or Gemma, suggest changing this to 1
+#define PIN 1 // On Trinket or Gemma, suggest changing this to 1
 
 // How many NeoPixels are attached to the Arduino?
 #define NUMPIXELS 24 // Popular NeoPixel ring size
@@ -40,11 +40,11 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 10 // Time (in milliseconds) to pause between pixels
 
 // RGB SENSOR PINS SET
-#define S0 11
-#define S1 12
-#define S2 8
-#define S3 9
-#define sensorOut 10
+#define S0 2
+#define S1 3
+#define S2 12
+#define S3 13
+#define sensorOut 8
 
 //VARS FOR SENSOR RGB
 int frequency = 0;
@@ -53,9 +53,9 @@ String nameColor = "";
 //char* iconPart = [];
 
 //ROTATORY ENCODER
-#define outputA 2
-#define outputB 3
-#define outputC 1
+#define outputA 5
+#define outputB 6
+#define outputC 7
 
 //VARS FOR ENCODER
 int counter = 0; 
@@ -222,50 +222,50 @@ int readColor() {
   Serial.println("  ");
   delay(50);
 
-  if(R<45 & R>32 & G<65 & G>55){
-    //color = 1; // Red
-    nameColor = "Red";
-    Serial.println(nameColor);
-    printLedRGB( 255, 0, 0); // red
-    //delay(200);
-    
+  if(R<85 & R>60 & G<265 & G>250){
+    color = 1; // Red
+    Serial.println("red");
+    delay(500);
   }
-  if(G<55 & G>43 & B<47 &B>35){
-    //color = 2; // Orange
-    nameColor = "Orange";
-    Serial.println(nameColor);
-    printLedRGB( 255, 120, 0); // orange
-    //delay(200);
+  if(G<165 & G>155 & B<175 &B>160){
+    color = 2; // Orange
+    Serial.println("orange");
+    delay(500);
   }
-  if(R<53 & R>40 & G<53 & G>40){
-    //color = 3; // Green
-    nameColor = "Green";
-    Serial.println(nameColor);
-    printLedRGB( 20, 255, 0); // green
-    //delay(200);
+  if(R<130 & R>110 & G<95 & G>80){
+    color = 3; // Green
+    Serial.println("green");
+    delay(500);
   }
-  if(R<38 & R>24 & G<44 & G>30){
-    //color = 4; // Yellow
-    nameColor = "Yellow";
-    Serial.println(nameColor);
-    //delay(200);
+  if(R<55 & R>40 & G<75 & G>60){
+    color = 4; // Yellow
+    Serial.println("yellow");
+    delay(500);
   }
-  if(R<56 & R>46 & G<65 & G>55){
-    //color = 5; // Brown
-    nameColor = "Brown";
-    Serial.println(nameColor);
-    //delay(200);
+  if(R<175 & R>155 & G<325 & G>305){
+    color = 5; // Brown
+    Serial.println("brown");
+    delay(500);
   }
-  if (G<58 & G>45 & B<40 &B>26){
-    //color = 6; // Blue
-    nameColor = "Blue";
-    Serial.println(nameColor);
-    //delay(200);
+  if (G<315 & G>280 & B<155 &B>130){
+    color = 6; // Blue
+    Serial.println("blue");
+    delay(500);
+  }
+  if (G<45 & G>35 & G<45 &G>35){
+    color = 7; // white
+    Serial.println("white");
+    delay(500);
+  }
+  if (R<450 & R>390 & B<280 &B>250){
+    color = 8; // black
+    Serial.println("black");
+    delay(500);
   }
   return color;  
 }
 
-/*// Custom Function - ledColorOn()
+//Custom Function - ledColorOn()
 void ledColorOn() {
 
   color = readColor();
@@ -296,7 +296,7 @@ void ledColorOn() {
     break;   
   }
   
-}*/
+}
 
 // Custom Function - printLedRGB()
 void printLedRGB(int red_light_value, int green_light_value, int blue_light_value) {

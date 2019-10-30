@@ -1,14 +1,8 @@
-
-/*
-
-
-*/
-
 //TEMP SENSOR
 #include "DHT.h"
 
 //TEMP SENSOR KIND, PIN & INIT
-#define DHTPIN 9
+#define DHTPIN 11
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -24,14 +18,13 @@ DHT dht(DHTPIN, DHTTYPE);
 Adafruit_SSD1306 oled(ANCHO, ALTO, &Wire, OLED_RESET);  
 
 //RGB LED PINS SET
-
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 
 // Which pin on the Arduino is connected to the NeoPixels?
-#define PIN 1 // On Trinket or Gemma, suggest changing this to 1
+#define PIN 0 // On Trinket or Gemma, suggest changing this to 1
 
 // How many NeoPixels are attached to the Arduino?
 #define NUMPIXELS 24 // Popular NeoPixel ring size
@@ -40,11 +33,11 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 10 // Time (in milliseconds) to pause between pixels
 
 // RGB SENSOR PINS SET
-#define S0 3
-#define S1 4
-#define S2 12
-#define S3 13
-#define sensorOut 8
+#define S0 5
+#define S1 6
+#define S2 7
+#define S3 9
+#define sensorOut 10
 
 //VARS FOR SENSOR RGB
 int frequency = 0;
@@ -52,90 +45,40 @@ int color = 0;
 String nameColor = "";
 //char* iconPart = [];
 
-//ROTATORY ENCODER
-#define outputA 5
-#define outputB 6
-#define outputC 7
-
-//VARS FOR ENCODER
-int counter = 0; 
-int aState;
-int aLastState;
+// ENCODER SET & VARS
+// Used for generating interrupts using CLK signal
+const int PinA = 2;
+// Used for reading DT signal
+const int PinB = 3;
+// Used for the push button switch
+const int PinSW = 8;
+// Keep track of last rotary value
+int lastCount = 0;
+// Updated by the ISR (Interrupt Service Routine)
+volatile int virtualPosition = 0;
 
 //USER INFO
 String userName = "Diana";
 
-void setup() {
+// INTERRUPT 
+void isr ()  {
+  static unsigned long lastInterruptTime = 0;
+  unsigned long interruptTime = millis();
 
-  // SERIAL BEGIN
-  Serial.begin(9600);
-
-  // ENCODER SET 
-  pinMode (outputA,INPUT);
-  pinMode (outputB,INPUT);
-  pinMode (outputC,INPUT);
-  digitalWrite(outputC, HIGH);
-   
-  // Reads the initial state of the outputA
-  aLastState = digitalRead(outputA); 
-  
-  // LED RGB SET
-  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
-  
-  // SENSOR DHT BEGIN
-  dht.begin();
-  
-  // INIT BUS I2C
-  Wire.begin();
-  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-
-  //PINS CONFIG FOR SENSOR RGB
-  pinMode(S0, OUTPUT);
-  pinMode(S1, OUTPUT);
-  pinMode(S2, OUTPUT);
-  pinMode(S3, OUTPUT);
-  pinMode(sensorOut, INPUT);
-
-  // Setting frequency-scaling to 20% to RGB Sensor
-  digitalWrite(S0, HIGH);
-  digitalWrite(S1, LOW);
-
-}
-
-void loop(){
-  encoderPos();
-
-  if(counter == 9 & digitalRead(outputC) == LOW){
-    printOledHi();
-
+  // If interrupts come faster than 5ms, assume it's a bounce and ignore
+  if (interruptTime - lastInterruptTime > 5) {
+    if (digitalRead(PinB) == LOW)
+    {
+      virtualPosition-- ; // Could be -5 or -10
+    }
+    else {
+      virtualPosition++ ; // Could be +5 or +10
+    }
   }
-
-  if(counter == 18 & digitalRead(outputC) == LOW){
-    tempSensor();
-  }
-
-  if(counter == 27 & digitalRead(outputC) == LOW){
-    readColor();
-          
-  }
+     
+  // Keep track of when we were here last (no more than every 5ms)
+  lastInterruptTime = interruptTime;
   
-}
-
-// Custom Function - encoderPos()
-void encoderPos() { 
-   aState = digitalRead(outputA); // Reads the "current" state of the outputA
-   // If the previous and the current state of the outputA are different, that means a Pulse has occured
-   if (aState != aLastState){     
-     // If the outputB state is different to the outputA state, that means the encoder is rotating clockwise
-     if (digitalRead(outputB) != aState) { 
-       counter ++;
-     } else {
-       counter --;
-     }
-     Serial.print("Position: ");
-     Serial.println(counter);
-   } 
-   aLastState = aState; // Updates the previous state of the outputA with the current state
 }
 
 // Custom Function - printOledHi()
@@ -195,7 +138,7 @@ int readColor() {
   Serial.print("R= ");//printing name
   Serial.print(frequency);//printing RED color frequency
   Serial.print("  ");
-  delay(50);
+  delay(500);
 
   // Setting Green filtered photodiodes to be read
   digitalWrite(S2, HIGH);
@@ -207,7 +150,7 @@ int readColor() {
   Serial.print("G= ");//printing name
   Serial.print(frequency);//printing RED color frequency
   Serial.print("  ");
-  delay(50);
+  delay(500);
 
   // Setting Blue filtered photodiodes to be read
   digitalWrite(S2, LOW);
@@ -219,7 +162,7 @@ int readColor() {
   Serial.print("B= ");//printing name
   Serial.print(frequency);//printing RED color frequency
   Serial.println("  ");
-  delay(50);
+  delay(500);
 
   if(R<85 & R>60 & G<265 & G>250){
     color = 1; // Red
@@ -267,7 +210,7 @@ int readColor() {
 //Custom Function - ledColorOn()
 void ledColorOn() {
 
-  if(counter == 27){
+  if(virtualPosition == 27){
     printLedRGB( 255, 255, 255); 
     delay(3000);
     } 
@@ -321,17 +264,87 @@ void printLedRGB(int red_light_value, int green_light_value, int blue_light_valu
 
   } 
 
-//  // Print in the serial Monitor
-//  //Serial.println(nameColor);
-//  // Print in oled color results
-//  oled.clearDisplay();
-//  oled.setTextColor(WHITE);
-//  oled.setCursor(0, 0);     
-//  oled.setTextSize(1);
-//  oled.print("El color es:"); 
-//  oled.setCursor (10, 30); 
-//  oled.setTextSize(2);
-//  oled.print(nameColor);
-//  //oled.print(iconPart);
-//  oled.display();
 }
+
+// MAIN SETUP
+void setup() {
+
+  // SERIAL BEGIN
+  Serial.begin(115200);
+  
+  // BUILT-LED
+  pinMode(LED_BUILTIN, OUTPUT);
+  
+  // Rotary pulses are INPUTs
+  pinMode(PinA, INPUT);
+  pinMode(PinB, INPUT);
+
+  // Switch is floating so use the in-built PULLUP so we don't need a resistor
+  pinMode(PinSW, INPUT_PULLUP);
+
+  // Attach the routine to service the interrupts
+  attachInterrupt(digitalPinToInterrupt(PinA), isr, LOW);
+  
+  // INIT BUS I2C
+  Wire.begin();
+  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+
+  // LED RGB SET
+  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  
+  // SENSOR DHT BEGIN
+  dht.begin();
+
+  //PINS CONFIG FOR SENSOR RGB
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(sensorOut, INPUT);
+
+  // Setting frequency-scaling to 20% to RGB Sensor
+  digitalWrite(S0, HIGH);
+  digitalWrite(S1, LOW);
+
+  // Ready to go!
+  Serial.println("Start");
+}
+
+
+//MAIN LOOP
+void loop() {
+
+  if(virtualPosition == 9){
+    printOledHi();
+
+  }
+
+  if(virtualPosition == 18){
+    tempSensor();
+  }
+
+  if(virtualPosition == 27){
+    readColor();
+          
+  }
+
+
+  // If the current rotary switch position has changed then update everything
+  if (virtualPosition != lastCount) {
+
+    // Write out to serial monitor the value and direction
+    Serial.print(virtualPosition > lastCount ? "Up  :" : "Down:");
+    Serial.println(virtualPosition);
+
+    // Keep track of this new value
+    lastCount = virtualPosition ;
+
+    oled.clearDisplay();
+    oled.setTextColor(WHITE);
+    oled.setCursor(0, 0);     
+    oled.setTextSize(2);
+    oled.print(virtualPosition); 
+    oled.display();
+  }
+}
+

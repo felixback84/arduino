@@ -40,8 +40,8 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 10 // Time (in milliseconds) to pause between pixels
 
 // RGB SENSOR PINS SET
-#define S0 3
-#define S1 4
+#define S0 2
+#define S1 3
 #define S2 12
 #define S3 13
 #define sensorOut 8
@@ -267,10 +267,8 @@ int readColor() {
 //Custom Function - ledColorOn()
 void ledColorOn() {
 
-  if(counter == 27){
-    printLedRGB( 255, 255, 255); 
-    delay(3000);
-    } 
+  //color = readColor();
+  //delay(100); 
   
   switch (color) {
     
@@ -321,17 +319,17 @@ void printLedRGB(int red_light_value, int green_light_value, int blue_light_valu
 
   } 
 
-//  // Print in the serial Monitor
-//  //Serial.println(nameColor);
-//  // Print in oled color results
-//  oled.clearDisplay();
-//  oled.setTextColor(WHITE);
-//  oled.setCursor(0, 0);     
-//  oled.setTextSize(1);
-//  oled.print("El color es:"); 
-//  oled.setCursor (10, 30); 
-//  oled.setTextSize(2);
-//  oled.print(nameColor);
-//  //oled.print(iconPart);
-//  oled.display();
+  // Print in the serial Monitor
+  //Serial.println(nameColor);
+  // Print in oled color results
+  oled.clearDisplay();
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 0);     
+  oled.setTextSize(1);
+  oled.print("El color es:"); 
+  oled.setCursor (10, 30); 
+  oled.setTextSize(2);
+  oled.print(nameColor);
+  //oled.print(iconPart);
+  oled.display();
 }
