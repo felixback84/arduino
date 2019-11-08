@@ -6,6 +6,8 @@
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
+float hic;
+
 //OLED
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -61,6 +63,13 @@ bool weMessageLogo = false;
 bool weMessageNameUser = false;
 bool showTemp = false;
 
+//LED ON/OFF
+int led = 13;
+
+//BUTTONS
+int buttonOnOff = 12;
+int buttonTemp = 10;
+
 void setup() {
 
   // SERIAL BEGIN
@@ -90,29 +99,62 @@ void setup() {
   Wire.begin();
   oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
+  //LED
+  pinMode(led,OUTPUT);
+
+  //BUTTONS
+  pinMode(buttonOnOff,INPUT);
+  pinMode(buttonTemp,INPUT);
+
 }
 
 void loop(){
 
-  while(weMessageLogo != true){
+  if(weMessageLogo != true){
     welcomeMessageLogo();  
   }
-  
-  while(weMessageNameUser != true){
-    welcomeMessageNameUser();  
-  }
-  
-  tempSensor();
+  if(weMessageNameUser != true){  
+    welcomeMessageNameUser();
+  }   
   
   encoderPosCualify();
   encoderPosColor();
-  matchEncoderColor();
-  
+  matchEncoderColor(); 
+ 
+  if(digitalRead(buttonOnOff) == HIGH){
+    digitalWrite(led,HIGH);
+    }else{
+    digitalWrite(led,LOW);
+      
+    }
+    
+//  if(digitalRead(buttonTemp) == LOW){
+//    
+//    float t;
+//    t = dht.readTemperature();
+//
+//    // Print in oled temp results
+//    oled.clearDisplay();
+//    oled.setTextColor(WHITE);
+//    oled.setCursor(0, 0);     
+//    oled.setTextSize(1);
+//    oled.print("La temperatura de Hilda es:"); 
+//    oled.setCursor (10, 30); 
+//    oled.setTextSize(2);
+//    oled.print(t);  
+//    oled.print(" C");
+//    oled.display();
+//    delay(5000);
+//    
+//  }else{
+//    // do somenthing
+//    
+//    } 
 }
 
 void welcomeMessageLogo() {
 
-  weMessageLogo;
+  //weMessageLogo;
   // Print in oled temp results
   oled.clearDisplay();
   oled.setTextColor(WHITE); 
@@ -121,14 +163,12 @@ void welcomeMessageLogo() {
   oled.print("hola, logo Hilda aqui");  
   oled.display();
   delay(5000);
-  oled.clearDisplay();
   weMessageLogo = true;
   
 }
 
 void welcomeMessageNameUser(){
 
-  weMessageNameUser;
   // Print in oled temp results
   oled.clearDisplay();
   oled.setTextColor(WHITE); 
@@ -137,38 +177,40 @@ void welcomeMessageNameUser(){
   oled.print("hola," + user_name);  
   oled.display();
   delay(5000);
-  oled.clearDisplay();
   weMessageNameUser = true;
  
 }
 
 // Custom Function - tempSensor()
-void tempSensor() {
-
-  float t;
-  float h;
-  h = dht.readHumidity();
-  t = dht.readTemperature();
-     
-  float hic = dht.computeHeatIndex(t,h, false);
-
-  // Print in the serial Monitor
-  Serial.println(hic);
-  // Print in oled temp results
-  oled.clearDisplay();
-  oled.setTextColor(WHITE);
-  oled.setCursor(0, 0);     
-  oled.setTextSize(1);
-  oled.print("Hola, la temperatura de hoy es:"); 
-  oled.setCursor (10, 30); 
-  oled.setTextSize(2);
-  oled.print(hic);  
-  oled.print(" C");
-  oled.display();
-  delay(5000);
-  showTemp = true;
-
-}
+//void tempSensor() {
+//
+//  float t;
+//  float h;
+//  
+//  h = dht.readHumidity();
+//  t = dht.readTemperature();
+//     
+//  hic = dht.computeHeatIndex(t,h, false);
+//
+//  // Print in the serial Monitor
+//  Serial.println(hic);
+//
+//  // Print in oled temp results
+//  oled.clearDisplay();
+//  oled.setTextColor(WHITE);
+//  oled.setCursor(0, 0);     
+//  oled.setTextSize(1);
+//  oled.print("La temperatura de Hilda es:"); 
+//  oled.setCursor (10, 30); 
+//  oled.setTextSize(2);
+//  oled.print(hic);  
+//  oled.print(" C");
+//  oled.display();
+//  delay(5000);
+//  
+//  showTemp = true;
+//
+//}
 
 // Custom Function - encoderPosCualify()
 void encoderPosCualify() { 
@@ -294,10 +336,17 @@ void printLedRGB(int red_light_value, int green_light_value, int blue_light_valu
   
   pixels.clear(); 
   for(int i=0; i<NUMPIXELS; i++) {
+    int bucle;
+    bucle ++;
     pixels.setPixelColor(i, pixels.Color(red_light_value, green_light_value, blue_light_value));
     pixels.show();
     delay(DELAYVAL);
+
+    if(bucle = NUMPIXELS){
+        pixels.clear();
+      }
   } 
+  
 }
 
 // Custom Function - printOledMessages()
@@ -312,4 +361,3 @@ void printOledColorMessages(String name_color){
   oled.display();
 
 }
-
