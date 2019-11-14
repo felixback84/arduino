@@ -78,9 +78,18 @@ long newLeft, newRight;
 /* Create an rtc object */
 RTCZero rtc;
 
-const byte date = "";
-const byte hour = "";
-const byte dateAndHour = "";
+// RTC VARS
+String dateDay = "";
+String dateMonth = "";
+String dateYear = "";
+
+String hourHour = "";
+String hourMinutes = "";
+String hourSeconds = "";
+
+String date = "";
+String hours = "";
+String dateAndHour = "";
 
 //OLED
 #include <Wire.h>
@@ -117,12 +126,12 @@ DHT dht(DHTPIN, DHTTYPE);
 //VARS FOR DHT22
 float hic;
 
-//COLOR VARS
-String name_color = "";
-
 //USERNAME & ID DEVICE
 String user_name = "Camila";
 int user_id_device = 000001;
+
+//COLOR VARS
+String name_color = "";
 
 //STATE OF SCREENS
 bool weMessageLogo = false;
@@ -151,26 +160,25 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Hilda device Test");
 
-  //RTC FOR JUST NOW DATE
+  // //RTC FOR JUST NOW DATE
   rtc.begin(); // initialize RTC
-  rtc.setEpoch(1573646843); // SECS UNTIL NOV 13 DEL 2019 - 12:07 PM
+  rtc.setEpoch(1573747640); // SECS UNTIL NOV
   
+  dateDay = rtc.getDay(); 
+  dateMonth = rtc.getMonth(); 
+  dateYear = rtc.getYear();
 
-  const byte dateDay = rtc.getDay(); 
-  const byte dateMonth = rtc.getMonth(); 
-  const byte dateYear = rtc.getYear();
+  hourHour = rtc.getHours();
+  hourMinutes = rtc.getMinutes();
+  hourSeconds = rtc.getSeconds();
 
-  const byte hourHour = rtc.getHours();
-  const byte hourMinutes = rtc.getMinutes();
-  const byte hourSeconds = rtc.getSeconds();
-  
-  date =  strcat(dateDay, dateMonth, dateYear);
-  hour = strcat(hourHour, hourMinutes, hourSeconds);
+  date = dateDay + "/" + dateMonth + "/" + dateYear;
+  hours = hourHour + ":" + hourMinutes + ":" + hourSeconds;
 
-  dateAndHour = strcat(date, hour);
+  dateAndHour = date + " " + hours;
 
   // LED RGB SET
-  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  pixels.begin(); // INITIALIZE NeoPixel strip object 
 
   // INIT BUS I2C
   Wire.begin();
@@ -239,12 +247,16 @@ void loop(){
 
   // save data in flash
   saveDataInFlashMemory();
+
+  if(saveData = true){
+    writeHttpResponseInJson();
+  }
   
 }
 
+// Custom Function - welcomeMessageLogo()
 void welcomeMessageLogo() {
 
-  //weMessageLogo;
   // Print in oled temp results
   oled.clearDisplay();
   oled.setTextColor(WHITE); 
@@ -257,6 +269,7 @@ void welcomeMessageLogo() {
   
 }
 
+// Custom Function - welcomeMessageNameUser()
 void welcomeMessageNameUser(){
 
   // Print in oled temp results
@@ -271,6 +284,7 @@ void welcomeMessageNameUser(){
  
 }
 
+// Custom Function - encoderReadPos()
 void encoderReadPos() {
   
   newLeft = knobLeft.read();
@@ -371,15 +385,9 @@ void printLedRGB(int red_light_value, int green_light_value, int blue_light_valu
   
   pixels.clear(); 
   for(int i=0; i<NUMPIXELS; i++) {
-    //int bucle;
-    //bucle ++;
     pixels.setPixelColor(i, pixels.Color(red_light_value, green_light_value, blue_light_value));
     pixels.show();
     delay(DELAYVAL);
-
-    //if(bucle = NUMPIXELS){
-      //  pixels.clear();
-      //}
   } 
 }
 
@@ -442,13 +450,11 @@ void saveDataInFlashMemory(){
     my_flash_store_hic.write(hic);
     Serial.println(hic);
     
-    writeHttpResponseInJson();
-
     saveData = true;
 
   } else {
 
-    //Serial.println("none data save");
+    Serial.println("none data save");
     saveData = false;
   }
 }
@@ -462,16 +468,13 @@ void writeHttpResponseInJson(){
   // Do we have a client?
   if (client){; 
     Serial.println(F("New client"));
-    // an http request ends with a blank line
-    boolean currentLineIsBlank = true;
-
+    
     // Is connected?
     while (client.connected()) {
 
       if (client.available()) {
 
         // Allocate a temporary JsonDocument
-        // Use arduinojson.org/v6/assistant to compute the capacity.
         StaticJsonDocument<500> doc;
 
         // Create the "pain level" array
@@ -508,15 +511,15 @@ void writeHttpResponseInJson(){
 
         // Write JSON document
         serializeJsonPretty(doc, client);
+
+        // give the web browser time to receive the data
+        delay(1); 
+
+        // Disconnect
+        client.stop();
+        Serial.println("client disonnected");
       }
     } 
-
-    // give the web browser time to receive the data
-    delay(1); 
-
-    // Disconnect
-    client.stop();
-
   }
 }
 
@@ -536,4 +539,11 @@ void printWifiStatus() {
   Serial.print("signal strength (RSSI):");
   Serial.print(rssi);
   Serial.println(" dBm");
+}
+
+void print2digits(int number) {
+  if (number < 10) {
+    Serial.print("0"); // print a 0 before if the number is < than 10
+  }
+  Serial.print(number);
 }
