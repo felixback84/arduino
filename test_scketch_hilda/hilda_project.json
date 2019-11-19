@@ -1,0 +1,44 @@
+
+reporte 00001 = {
+	
+	"id-device":
+	{
+		"000001"
+	},
+
+	"username":
+	{
+		"Diana"
+	},
+
+	"date": 
+	{
+		"09-09-2010"
+	},
+
+	"hours":
+	{
+		"13:00"
+	},
+
+	"temperatura-device":
+	{
+		"30ºC"
+	},
+
+	"pain-level":
+	{
+		"7"
+	},
+
+	"pain-location":
+	{
+		"cabeza"
+	},
+
+	"name-color":
+	{
+		"rojo"
+	}
+
+}

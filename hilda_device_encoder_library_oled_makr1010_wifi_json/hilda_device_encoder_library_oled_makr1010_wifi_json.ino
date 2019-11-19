@@ -56,7 +56,7 @@ int status = WL_IDLE_STATUS;
 WiFiServer server(80);// your network key Index number (needed only for WEP)
 
 //LIBRARY FOR FLASH MEMORY
-#include <FlashStorage.h>
+//#include <FlashStorage.h>
 
 //LIBRARY TO GENERATE JSON FILES
 #include <ArduinoJson.h>
@@ -75,6 +75,7 @@ long newLeft, newRight;
 
 // RTC
 #include <RTCZero.h>
+
 /* Create an rtc object */
 RTCZero rtc;
 
@@ -89,7 +90,7 @@ String hourSeconds = "";
 
 String date = "";
 String hours = "";
-String dateAndHour = "";
+//String dateAndHour = "";
 
 //OLED
 #include <Wire.h>
@@ -132,6 +133,7 @@ int user_id_device = 000001;
 
 //COLOR VARS
 String name_color = "";
+String name_body_part = "";
 
 //STATE OF SCREENS
 bool weMessageLogo = false;
@@ -148,11 +150,11 @@ int buttonTemp = 8;
 int buttonSaveData = 10;
 
 //FLASH MEMORY DEFINITION SPACES FOR VARS RESULTS
-FlashStorage(my_flash_store_date_hour, String);
-FlashStorage(my_flash_store_user_name, String);
-FlashStorage(my_flash_store_name_color, String);
-FlashStorage(my_flash_store_newRight, int);
-FlashStorage(my_flash_store_hic, long int);
+// FlashStorage(my_flash_store_date_hour, String);
+// FlashStorage(my_flash_store_user_name, String);
+// FlashStorage(my_flash_store_name_color, String);
+// FlashStorage(my_flash_store_newRight, int);
+// FlashStorage(my_flash_store_hic, long int);
 
 void setup() {
 
@@ -162,7 +164,7 @@ void setup() {
 
   // //RTC FOR JUST NOW DATE
   rtc.begin(); // initialize RTC
-  rtc.setEpoch(1573747640); // SECS UNTIL NOV
+  rtc.setEpoch(1574169031); // SECS UNTIL NOV
   
   dateDay = rtc.getDay(); 
   dateMonth = rtc.getMonth(); 
@@ -175,7 +177,7 @@ void setup() {
   date = dateDay + "/" + dateMonth + "/" + dateYear;
   hours = hourHour + ":" + hourMinutes + ":" + hourSeconds;
 
-  dateAndHour = date + " " + hours;
+  //dateAndHour = date + "-" + hours;
 
   // LED RGB SET
   pixels.begin(); // INITIALIZE NeoPixel strip object 
@@ -246,7 +248,7 @@ void loop(){
   matchEncoderColor();
 
   // save data in flash
-  saveDataInFlashMemory();
+  // saveDataInFlashMemory();
 
   if(saveData = true){
     writeHttpResponseInJson();
@@ -323,6 +325,7 @@ void matchEncoderColor(){
 
   if(newLeft == 10){
     name_color = "Non";
+    name_body_part = "Ninguna";
     Serial.println("non");
     printOledColorMessages(name_color);
     printLedRGB( 0, 0, 0); // non  
@@ -331,6 +334,7 @@ void matchEncoderColor(){
 
   if(newLeft == 20){
     name_color = "Red";
+    name_body_part = "Cabeza";
     Serial.println("red");
     printOledColorMessages(name_color);
     printLedRGB( 255, 0, 0); // red
@@ -338,6 +342,7 @@ void matchEncoderColor(){
   } 
   if(newLeft == 30){
     name_color = "Orange";
+    name_body_part = "Cuello";
     Serial.println("orange");
     printOledColorMessages(name_color);
     printLedRGB( 255, 120, 0); // orange
@@ -345,6 +350,7 @@ void matchEncoderColor(){
   }
   if(newLeft == 40){
     name_color = "Green";
+    name_body_part = "Busto";
     Serial.println("green");
     printOledColorMessages(name_color);
     printLedRGB( 20, 255, 0); // green
@@ -352,6 +358,7 @@ void matchEncoderColor(){
   }
   if(newLeft == 50){
     name_color = "Yellow";
+    name_body_part = "Abdomen";
     Serial.println("yellow");
     printOledColorMessages(name_color);
     printLedRGB( 255, 240, 0); // yellow
@@ -359,6 +366,7 @@ void matchEncoderColor(){
   }
   if(newLeft == 60){
     name_color = "Brown";
+    name_body_part = "Articulaciones";
     Serial.println("brown");
     printOledColorMessages(name_color);
     printLedRGB( 85, 65, 0); // brown
@@ -366,6 +374,7 @@ void matchEncoderColor(){
   }
   if(newLeft == 70){
     name_color = "Blue";
+    name_body_part = "Espalda";
     Serial.println("blue");
     printOledColorMessages(name_color);
     printLedRGB( 0, 60, 255); // blue
@@ -373,6 +382,7 @@ void matchEncoderColor(){
   }
   if(newLeft == 80){
     name_color = "Fucsia";
+    name_body_part = "Pies";
     Serial.println("fucsia");
     printOledColorMessages(name_color);
     printLedRGB( 255, 0, 110); // Fucsia
@@ -435,29 +445,29 @@ void tempSensorData() {
 }
 
 // Custom Function - aveDataInFlashMemory()
-void saveDataInFlashMemory(){
+// void saveDataInFlashMemory(){
 
-  if( digitalRead(buttonSaveData) == HIGH & saveData != true){
+//   if( digitalRead(buttonSaveData) == HIGH & saveData != true){
 
-    my_flash_store_date_hour.write(dateAndHour);
-    Serial.println(dateAndHour);
-    my_flash_store_user_name.write(user_name);
-    Serial.println(user_name);
-    my_flash_store_name_color.write(name_color);
-    Serial.println(name_color);
-    my_flash_store_newRight.write(newRight);
-    Serial.println(newRight);
-    my_flash_store_hic.write(hic);
-    Serial.println(hic);
+//     my_flash_store_date_hour.write(dateAndHour);
+//     Serial.println(dateAndHour);
+//     my_flash_store_user_name.write(user_name);
+//     Serial.println(user_name);
+//     my_flash_store_name_color.write(name_color);
+//     Serial.println(name_color);
+//     my_flash_store_newRight.write(newRight);
+//     Serial.println(newRight);
+//     my_flash_store_hic.write(hic);
+//     Serial.println(hic);
     
-    saveData = true;
+//     saveData = true;
 
-  } else {
+//   } else {
 
-    Serial.println("none data save");
-    saveData = false;
-  }
-}
+//     //Serial.println("none data save");
+//     saveData = false;
+//   }
+// }
 
 // Custom Function - writeHttpResponseInJson()
 void writeHttpResponseInJson(){
@@ -477,10 +487,30 @@ void writeHttpResponseInJson(){
         // Allocate a temporary JsonDocument
         StaticJsonDocument<500> doc;
 
-        // Create the "pain level" array
-        JsonArray date_hour_value = doc.createNestedArray("date_hour"); 
+        // Create the "id_device" array
+        JsonArray id_device_value = doc.createNestedArray("id-device");
         // Add the value at the end of the array
-        date_hour_value.add(dateAndHour);
+        id_device_value.add(user_id_device);
+
+        // Create the "username" array
+        JsonArray username_value = doc.createNestedArray("username");
+        // Add the value at the end of the array
+        username_value.add(user_name);
+
+        // Create the "date" array
+        JsonArray date_value = doc.createNestedArray("date"); 
+        // Add the value at the end of the array
+        date_value.add(date);
+        
+        // Create the "hours" array
+        JsonArray hours_value = doc.createNestedArray("hours"); 
+        // Add the value at the end of the array
+        hours_value.add(hours);
+
+        // Create the "temperature" array
+        JsonArray temperature_value = doc.createNestedArray("temperature");
+        // Add the value at the end of the array
+        temperature_value.add(hic);
 
         // Create the "pain level" array
         JsonArray pain_level_value = doc.createNestedArray("pain_level"); 
@@ -490,21 +520,22 @@ void writeHttpResponseInJson(){
         // Create the "pain location" array
         JsonArray pain_location_value = doc.createNestedArray("pain_location");
         // Add the value at the end of the array
-        pain_location_value.add(name_color);
-       
-        // Create the "temperature" array
-        JsonArray temperature_value = doc.createNestedArray("temperature");
+        pain_location_value.add(name_body_part);
+
+        // Create the "neme_color" array
+        JsonArray name_color_value = doc.createNestedArray("name_color");
         // Add the value at the end of the array
-        temperature_value.add(hic);
+        name_color_value.add(name_color);
 
         Serial.print(F("Sending: "));
         serializeJson(doc, Serial);
         Serial.println();
 
         // Write response headers
-        client.println(F("HTTP/1.0 200 OK"));
+        client.println(F("HTTP/1.0 200 OK"));  
+        client.println("Access-Control-Allow-Origin: *");
         client.println(F("Content-Type: application/json"));
-        client.println(F("Connection: close"));
+        client.println("Connection: close"); 
         client.print(F("Content-Length: "));
         client.println(measureJsonPretty(doc));
         client.println();
@@ -539,11 +570,4 @@ void printWifiStatus() {
   Serial.print("signal strength (RSSI):");
   Serial.print(rssi);
   Serial.println(" dBm");
-}
-
-void print2digits(int number) {
-  if (number < 10) {
-    Serial.print("0"); // print a 0 before if the number is < than 10
-  }
-  Serial.print(number);
 }
