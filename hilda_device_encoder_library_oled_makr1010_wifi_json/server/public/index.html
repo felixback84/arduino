@@ -53,38 +53,20 @@
 
     </div>
 
-    <canvas id="myChart"></canvas>
-
+    <div id="charts">
+      <canvas style="height: 50%; width: 50%;" id="myChart"></canvas>
+      <canvas style="height: 50%; width: 50%;" id="body-part/counter"></canvas>
+      <canvas style="height: 50%; width: 50%;" id="color/counter"></canvas>
+      <canvas style="height: 50%; width: 50%;" id="date/counter"></canvas>
+    </div>
+    
     <script>
 
-      var myUrl1 = 'http://192.168.0.12';
-      var date = ''; 
-      var hour = '';
-      var temp = '';
-      var painLev = 0;
-      var painLoc = '';
-      var color = '';
-
-
-      var ctx = document.getElementById('myChart').getContext('2d');
-      var xlabels_hours = [];
-      var chart = new Chart(ctx, {
-        // The type of chart we want to create
-        type: 'line',
-        // The data for our dataset
-        data: {
-            labels: xlabels_hours,
-            datasets: [{
-                label: 'hi chart',
-                backgroundColor: 'rgb(52, 73, 94)',
-                borderColor: 'rgb(41, 128, 185)',
-                data: [],
-            }]
-          },
-          // Configuration options go here
-          options: {}
-        }); 
-       
+      //global vars
+      var myUrl1 = 'http://192.168.0.7';
+      var chart1 =[];
+  
+      //put data in fields
       $(document).ready(function(){
           //Populate the options for the IP address drop-down boxes.
           for(j=0; j<256; j++){
@@ -107,16 +89,14 @@
       //When the start button is clicked - get the data from the Arduino
       $("#startData").click(function(){
         $(document).ready(function(){
-          getMyData(); //get data once the document is ready
+          //function main init
+          chartIt();
         });
       });  
       
-      //Stop collecting data when the stop button is clicked.
-      $("#stopData").click(function(){
-        clearTimeout(timeOut); //This clears any future requests for data (until the Start button is pressed again)
-      });
-      
-      function getMyData(){ 
+      //Get data
+      async function getMyDataAsync(){
+
         //get the IP address from the drop-down boxes
         var x0 = $('#Addr0 option:selected').text();
         var x1 = $('#Addr1 option:selected').text();
@@ -125,48 +105,50 @@
             
         //Construct the URL of the Arduino Server we plan to connect to
         //var myUrl = 'http://' + x0 + "." + x1 + "." + x2 + "." + x3 + "/";
-        
-        var myData = $.ajax({
 
-          url: myUrl1, // eg.  http://10.1.1.99:8081/
-          //data: { tag: 'GetDataFromArduino'},
-          dataType : "json", //We will be requesting data in JSON format
-          timeout : 10000,  //this will cancel the request if it has not received a reply within 10 seconds.
-          
-          success: function(data){
-            console.log('Success - you are a legend');
-            $("#FailureStatus").html("<h2>Status: OK</h2>");  //clear any failure messages.
+        const response = await fetch(myUrl1);
+        const data = await response.json();
+        console.log(data);   
 
-            date = data.date;
+        const {pain_level, counter_registers_value} = data 
+        console.log(pain_level);
 
-            hour = data.hours;
-            xlabels_hours.push(hour);
+        //send data
+        addData(chart1, counter_registers_value, pain_level);
 
-            temp = data.temparature;
-
-            painLev = data.pain_level;
-
-            painLoc = data.pain_location;
-
-            color = data.name_color;
-
-            console.log(hour);
-
-          }});
-            
-          myData.error(function(xhr, status, errorThrown){   
-          $("#FailureStatus").html("<span><h2>Status:FAILED to get DATA !! </h2></SPAN>"); 
-           
-          console.log('Failure'); 
-          console.log("Error: " + errorThrown); 
-          console.log("Status: " + status);
-          console.dir(xhr);
-
-        });
-        
-        timeOut = setTimeout('getMyData()', 10000); //this will request data again in 1 second.
       }
 
-      </script>
+      //send data
+      async function addData(chart, label, data) {
+        await getMyDataAsync();
+        chart.data.labels.push(label);
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.push(data);
+        });
+        chart.update();
+      }
+      
+      //create chart with data
+      async function chartIt(){
+        await getMyDataAsync();
+        var ctx = document.getElementById('myChart').getContext('2d');
+        chart1 = new Chart(ctx, {
+          // The type of chart we want to create
+          type: 'line',
+          // The data for our dataset
+          data: {
+              labels: [],
+              datasets: [{
+                  label: 'hi chart',
+                  backgroundColor: 'rgb(52, 73, 94)',
+                  borderColor: 'rgb(41, 128, 185)',
+                  data: [],
+              }]
+          },
+            // Configuration options go here
+          options: {}
+        }); 
+      }
+    </script>
   </body>
 </html>

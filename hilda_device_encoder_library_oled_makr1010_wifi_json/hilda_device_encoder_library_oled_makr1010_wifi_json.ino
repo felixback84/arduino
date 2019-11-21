@@ -84,13 +84,14 @@ String dateDay = "";
 String dateMonth = "";
 String dateYear = "";
 
-String hourHour = "";
-String hourMinutes = "";
-String hourSeconds = "";
+//String hourHour = "";
+//String hourMinutes = "";
+//String hourSeconds = "";
 
 String date = "";
 String hours = "";
 //String dateAndHour = "";
+long int unixSeg;
 
 //OLED
 #include <Wire.h>
@@ -129,7 +130,7 @@ float hic;
 
 //USERNAME & ID DEVICE
 String user_name = "Camila";
-int user_id_device = 000001;
+int user_id_device = 12345;
 
 //COLOR VARS
 String name_color = "";
@@ -139,7 +140,7 @@ String name_body_part = "";
 bool weMessageLogo = false;
 bool weMessageNameUser = false;
 bool showTemp = false;
-bool saveData = false;
+//bool sendData = false;
 
 //LED BUILT-IN FOR ON/OFF
 int led = 6; 
@@ -149,12 +150,16 @@ int buttonOnOff = 7;
 int buttonTemp = 8;
 int buttonSaveData = 10;
 
+//BUTTONS STATE & COUNT
+//int buttonState = 0; 
+int countRegisters = 0;
+
 //FLASH MEMORY DEFINITION SPACES FOR VARS RESULTS
-// FlashStorage(my_flash_store_date_hour, String);
-// FlashStorage(my_flash_store_user_name, String);
-// FlashStorage(my_flash_store_name_color, String);
-// FlashStorage(my_flash_store_newRight, int);
-// FlashStorage(my_flash_store_hic, long int);
+//FlashStorage(my_flash_store_date_hour, String);
+//FlashStorage(my_flash_store_user_name, String);
+//FlashStorage(my_flash_store_name_color, String);
+//FlashStorage(my_flash_store_newRight, int);
+//FlashStorage(my_flash_store_hic, long int);
 
 void setup() {
 
@@ -164,18 +169,18 @@ void setup() {
 
   // //RTC FOR JUST NOW DATE
   rtc.begin(); // initialize RTC
-  rtc.setEpoch(1574169031); // SECS UNTIL NOV
+  rtc.setEpoch(1574350789); // SECS UNTIL NOV ALWAYS DEVALUABLE
   
   dateDay = rtc.getDay(); 
   dateMonth = rtc.getMonth(); 
   dateYear = rtc.getYear();
 
-  hourHour = rtc.getHours();
-  hourMinutes = rtc.getMinutes();
-  hourSeconds = rtc.getSeconds();
+  //hourHour = rtc.getHours();
+  //hourMinutes = rtc.getMinutes();
+  //hourSeconds = rtc.getSeconds();
 
   date = dateDay + "/" + dateMonth + "/" + dateYear;
-  hours = hourHour + ":" + hourMinutes + ":" + hourSeconds;
+  //hours = hourHour + ":" + hourMinutes + ":" + hourSeconds;
 
   //dateAndHour = date + "-" + hours;
 
@@ -250,9 +255,12 @@ void loop(){
   // save data in flash
   // saveDataInFlashMemory();
 
-  if(saveData = true){
-    writeHttpResponseInJson();
-  }
+  writeHttpResponseInJson();
+  
+  //buttonState = digitalRead(buttonSaveData);
+  //if( buttonState == HIGH){
+    //counterClicks();
+  //}
   
 }
 
@@ -483,73 +491,48 @@ void writeHttpResponseInJson(){
     while (client.connected()) {
 
       if (client.available()) {
-
+        
         // Allocate a temporary JsonDocument
+        //StaticJsonDocument<500> doc;
         StaticJsonDocument<500> doc;
 
-        // Create the "id_device" array
-        JsonArray id_device_value = doc.createNestedArray("id-device");
-        // Add the value at the end of the array
-        id_device_value.add(user_id_device);
+        // Counter of requests from the client
+        counterClicks();
 
-        // Create the "username" array
-        JsonArray username_value = doc.createNestedArray("username");
-        // Add the value at the end of the array
-        username_value.add(user_name);
-
-        // Create the "date" array
-        JsonArray date_value = doc.createNestedArray("date"); 
-        // Add the value at the end of the array
-        date_value.add(date);
+        // write json pairs
+        doc["counter_registers_value"] = countRegisters;
+        doc["time-unixtime"] = unixSeg;
+        doc["date"] = date;
+        doc["user_name"] = user_id_device;
+        doc["temperature"] = hic;
+        doc["pain_level"] = newRight;
+        doc["pain_location"] = name_body_part;
+        doc["name_color"] = name_color;
         
-        // Create the "hours" array
-        JsonArray hours_value = doc.createNestedArray("hours"); 
-        // Add the value at the end of the array
-        hours_value.add(hours);
-
-        // Create the "temperature" array
-        JsonArray temperature_value = doc.createNestedArray("temperature");
-        // Add the value at the end of the array
-        temperature_value.add(hic);
-
-        // Create the "pain level" array
-        JsonArray pain_level_value = doc.createNestedArray("pain_level"); 
-        // Add the value at the end of the array
-        pain_level_value.add(newRight);
-
-        // Create the "pain location" array
-        JsonArray pain_location_value = doc.createNestedArray("pain_location");
-        // Add the value at the end of the array
-        pain_location_value.add(name_body_part);
-
-        // Create the "neme_color" array
-        JsonArray name_color_value = doc.createNestedArray("name_color");
-        // Add the value at the end of the array
-        name_color_value.add(name_color);
-
         Serial.print(F("Sending: "));
         serializeJson(doc, Serial);
         Serial.println();
 
         // Write response headers
-        client.println(F("HTTP/1.0 200 OK"));  
+        client.println(F("HTTP/1.0 200 OK"));
         client.println("Access-Control-Allow-Origin: *");
         client.println(F("Content-Type: application/json"));
-        client.println("Connection: close"); 
+        client.println(F("Connection: close"));
         client.print(F("Content-Length: "));
         client.println(measureJsonPretty(doc));
         client.println();
-
+        
         // Write JSON document
         serializeJsonPretty(doc, client);
 
         // give the web browser time to receive the data
         delay(1); 
-
-        // Disconnect
-        client.stop();
-        Serial.println("client disonnected");
+        
       }
+      // Disconnect
+      Serial.println("client disonnected");
+      //counterClicks();
+      client.WiFiClient::stop();
     } 
   }
 }
@@ -570,4 +553,12 @@ void printWifiStatus() {
   Serial.print("signal strength (RSSI):");
   Serial.print(rssi);
   Serial.println(" dBm");
+  
+}
+
+void counterClicks(){
+  countRegisters++;
+  delay(500);
+  Serial.println(countRegisters);
+
 }
