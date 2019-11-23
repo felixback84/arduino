@@ -526,7 +526,7 @@ void writeHttpResponseInJson(){
         serializeJsonPretty(doc, client);
 
         // give the web browser time to receive the data
-        delay(1); 
+        //delay(1); 
         
       }
       // Disconnect

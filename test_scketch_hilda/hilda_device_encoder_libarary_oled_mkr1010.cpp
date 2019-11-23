@@ -135,6 +135,7 @@ int user_id_device = 12345;
 //COLOR VARS
 String name_color = "";
 String name_body_part = "";
+String pain_level = "";
 
 //STATE OF SCREENS
 bool weMessageLogo = false;
@@ -147,12 +148,32 @@ int led = 6;
 
 //BUTTONS
 int buttonOnOff = 7;
-int buttonTemp = 8;
-int buttonSaveData = 10;
+//int buttonTemp = 8;
+//int buttonSaveData = 10;
 
 //BUTTONS STATE & COUNT
 //int buttonState = 0; 
 int countRegisters = 0;
+
+//LOGOS BITMAP
+#define LOGO_HEIGHT 50
+#define LOGO_WIDTH  50
+
+extern uint8_t logo_welcome[];
+extern uint8_t logo_cara1_1[];
+extern uint8_t logo_cara2_1[];
+extern uint8_t logo_cara3_1[];
+extern uint8_t logo_cara4_1[];
+extern uint8_t logo_cara5_1[];
+extern uint8_t logo_cara6_1[];
+extern uint8_t logo_cara7_1[];
+extern uint8_t logo_pies[];
+extern uint8_t logo_cabeza[];
+extern uint8_t logo_cuello[];
+extern uint8_t logo_espalda[];
+extern uint8_t logo_busto[];
+extern uint8_t logo_abdomen[];
+extern uint8_t logo_ebaja[];
 
 //FLASH MEMORY DEFINITION SPACES FOR VARS RESULTS
 //FlashStorage(my_flash_store_date_hour, String);
@@ -198,8 +219,8 @@ void setup() {
 
   //BUTTONS
   pinMode(buttonOnOff,INPUT);
-  pinMode(buttonTemp,INPUT);
-  pinMode(buttonSaveData,INPUT);
+  //pinMode(buttonTemp,INPUT);
+  //pinMode(buttonSaveData,INPUT);
 
   //wifi connection
   //check for the WiFi module:
@@ -248,8 +269,11 @@ void loop(){
   // encoder read
   encoderReadPos();
 
+  // encoder pain body part
+  matchEncoderPainLevel();
+
   // color match and coloring leds
-  matchEncoderColor();
+  matchEncoderColorPainBodyPart();
 
   // save data in flash
   // saveDataInFlashMemory();
@@ -267,12 +291,7 @@ void loop(){
 void welcomeMessageLogo() {
 
   // Print in oled temp results
-  oled.clearDisplay();
-  oled.setTextColor(WHITE); 
-  oled.setCursor (10, 30); 
-  oled.setTextSize(2);
-  oled.print("hola, logo Hilda aqui");  
-  oled.display();
+  drawCustomBitmap(logo_welcome);
   delay(5000);
   weMessageLogo = true;
   
@@ -286,7 +305,7 @@ void welcomeMessageNameUser(){
   oled.setTextColor(WHITE); 
   oled.setCursor (10, 30); 
   oled.setTextSize(2);
-  oled.print("hola," + user_name);  
+  oled.print("Nombre:" + user_name + "-" + "ID:" + user_id_device);  
   oled.display();
   delay(5000);
   weMessageNameUser = true;
@@ -327,8 +346,65 @@ void encoderReadPos() {
   }  
 }
 
+// Custom Function - matchEncoderPainLevel()
+void matchEncoderPainLevel(){
+
+  if(newRight == 10){
+    pain_level = "Uno";
+    name_body_part = "Ninguna";
+    drawCustomBitmap(logo_cara1_1);
+    printOledColorMessages(pain_level);
+    
+  }
+
+  if(newRight == 20){
+    pain_level = "Dos";
+    name_body_part = "Cabeza";
+    drawCustomBitmap(logo_cara2_1);
+    printOledColorMessages(pain_level);
+     
+  } 
+  if(newRight == 30){
+    pain_level = "Tres";
+    name_body_part = "Cuello";
+    drawCustomBitmap(logo_cara3_1);
+    printOledColorMessages(pain_level);
+ 
+    
+  }
+  if(newRight == 40){
+    pain_level = "Cuatro";
+    name_body_part = "Busto";
+    drawCustomBitmap(logo_cara4_1);
+    printOledColorMessages(pain_level);
+
+  }
+  if(newRight == 50){
+    pain_level = "Cinco";
+    name_body_part = "Abdomen";
+    drawCustomBitmap(logo_cara5_1);
+    printOledColorMessages(pain_level);
+    
+  }
+  if(newRight == 60){
+    pain_level = "Seis";
+    name_body_part = "Espalda baja";
+    drawCustomBitmap(logo_cara6_1);
+    printOledColorMessages(pain_level);
+    
+  }
+  if(newRight == 70){
+    pain_level = "Siete";
+    name_body_part = "Espalda";
+    drawCustomBitmap(logo_cara7_1);
+    printOledColorMessages(pain_level);
+    
+  }
+  
+}
+
 // Custom Function - matchEncoderColor()
-void matchEncoderColor(){
+void matchEncoderColorPainBodyPart(){
 
   if(newLeft == 10){
     name_color = "Non";
@@ -343,7 +419,8 @@ void matchEncoderColor(){
     name_color = "Red";
     name_body_part = "Cabeza";
     Serial.println("red");
-    printOledColorMessages(name_color);
+    drawCustomBitmap(logo_cabeza);
+    printOledColorMessages(name_body_part);
     printLedRGB( 255, 0, 0); // red
      
   } 
@@ -351,7 +428,8 @@ void matchEncoderColor(){
     name_color = "Orange";
     name_body_part = "Cuello";
     Serial.println("orange");
-    printOledColorMessages(name_color);
+    drawCustomBitmap(logo_cuello);
+    printOledColorMessages(name_body_part);
     printLedRGB( 255, 120, 0); // orange
     
   }
@@ -359,7 +437,8 @@ void matchEncoderColor(){
     name_color = "Green";
     name_body_part = "Busto";
     Serial.println("green");
-    printOledColorMessages(name_color);
+    drawCustomBitmap(logo_busto);
+    printOledColorMessages(name_body_part);
     printLedRGB( 20, 255, 0); // green
     
   }
@@ -367,23 +446,26 @@ void matchEncoderColor(){
     name_color = "Yellow";
     name_body_part = "Abdomen";
     Serial.println("yellow");
-    printOledColorMessages(name_color);
+    drawCustomBitmap(logo_abdomen);
+    printOledColorMessages(name_body_part);
     printLedRGB( 255, 240, 0); // yellow
     
   }
   if(newLeft == 60){
-    name_color = "Brown";
-    name_body_part = "Articulaciones";
+    name_color = "Ocean blue";
+    name_body_part = "Espalda baja";
     Serial.println("brown");
-    printOledColorMessages(name_color);
-    printLedRGB( 0, 255, 240); // ocean blue
+    drawCustomBitmap(logo_ebaja);
+    printOledColorMessages(name_body_part);
+    printLedRGB( 0, 255, 255); // ocean blue
     
   }
   if(newLeft == 70){
     name_color = "Blue";
     name_body_part = "Espalda";
     Serial.println("blue");
-    printOledColorMessages(name_color);
+    drawCustomBitmap(logo_espalda);
+    printOledColorMessages(name_body_part);
     printLedRGB( 0, 60, 255); // blue
     
   }
@@ -391,7 +473,8 @@ void matchEncoderColor(){
     name_color = "Fucsia";
     name_body_part = "Pies";
     Serial.println("fucsia");
-    printOledColorMessages(name_color);
+    drawCustomBitmap(logo_pies);
+    printOledColorMessages(name_body_part);
     printLedRGB( 255, 0, 110); // Fucsia
     
   } 
@@ -406,18 +489,6 @@ void printLedRGB(int red_light_value, int green_light_value, int blue_light_valu
     pixels.show();
     delay(DELAYVAL);
   } 
-}
-
-// Custom Function - printOledMessages()
-void printOledColorMessages(String name_color){
-
-  oled.clearDisplay();
-  oled.setTextColor(WHITE);
-  oled.setCursor(0, 0);       
-  oled.setCursor (10, 30); 
-  oled.setTextSize(2);
-  oled.print(name_color);  
-  oled.display();
 }
 
 // Custom Function - tempSensor()
@@ -561,4 +632,29 @@ void counterClicks(){
   delay(500);
   Serial.println(countRegisters);
 
+}
+
+// Custom Function - printOledMessages()
+void printOledColorMessages(String name_color){
+
+  oled.clearDisplay();
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 0);       
+  oled.setCursor (20, 30); 
+  oled.setTextSize(1);
+  oled.print(name_color);  
+  oled.display();
+}
+
+// Custom Function - drawBitmap()
+void drawCustomBitmap(uint8_t nameChart []){
+
+  // Print in oled temp results
+  oled.clearDisplay();
+  oled.setTextColor(WHITE);
+  oled.drawBitmap(
+    (oled.width()  - LOGO_WIDTH ) / 2,
+    (oled.height() - LOGO_HEIGHT) / 2,
+    nameChart, LOGO_WIDTH, LOGO_HEIGHT, 1);
+  oled.display();
 }

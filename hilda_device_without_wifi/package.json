@@ -1,0 +1,17 @@
+{
+  "name": "hilda_device_without_wifi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "serialport": "^8.0.5",
+    "socket.io": "^2.3.0"
+  }
+}

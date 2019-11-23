@@ -55,9 +55,7 @@
 
     <div id="charts">
       <canvas style="height: 50%; width: 50%;" id="myChart"></canvas>
-      <canvas style="height: 50%; width: 50%;" id="body-part/counter"></canvas>
-      <canvas style="height: 50%; width: 50%;" id="color/counter"></canvas>
-      <canvas style="height: 50%; width: 50%;" id="date/counter"></canvas>
+      
     </div>
     
     <script>
@@ -120,12 +118,15 @@
 
       //send data
       async function addData(chart, label, data) {
+        
         await getMyDataAsync();
-        chart.data.labels.push(label);
-        chart.data.datasets.forEach((dataset) => {
+        
+          chart.data.labels.push(label);
+          chart.data.datasets.forEach((dataset) => {
             dataset.data.push(data);
-        });
-        chart.update();
+          });
+          chart.update();
+        
       }
       
       //create chart with data
