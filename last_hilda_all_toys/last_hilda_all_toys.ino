@@ -13,15 +13,15 @@
 
 //VCC 5V
 //GND GND
-//DT D4
-//CLK D5
+//DT D5
+//CLK D4
 
 //ENCODER 02
 
 //VCC 5V
 //GND GND
-//DT D1
-//CLK D0
+//DT D0
+//CLK D1
 
 //DHT 22
 
@@ -115,7 +115,7 @@ Adafruit_SSD1306 oled(ANCHO, ALTO, &Wire, OLED_RESET);
 // How many NeoPixels are attached to the Arduino?
 #define NUMPIXELS 24 // Popular NeoPixel ring size
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-#define DELAYVAL 5 // Time (in milliseconds) to pause between pixels
+#define DELAYVAL 30 // Time (in milliseconds) to pause between pixels
 
 //TEMP SENSOR
 #include "DHT.h"
@@ -135,7 +135,7 @@ int user_id_device = 12345;
 //COLOR VARS
 String name_color = "";
 String name_body_part = "";
-String pain_level = "";
+int pain_level = 0;
 
 //STATE OF SCREENS
 bool weMessageLogo = false;
@@ -160,6 +160,7 @@ int countRegisters = 0;
 #define LOGO_WIDTH  50
 
 extern uint8_t logo_welcome[];
+extern uint8_t logo_cara0_1[];
 extern uint8_t logo_cara1_1[];
 extern uint8_t logo_cara2_1[];
 extern uint8_t logo_cara3_1[];
@@ -190,7 +191,7 @@ void setup() {
 
   // //RTC FOR JUST NOW DATE
   rtc.begin(); // initialize RTC
-  rtc.setEpoch(1574350789); // SECS UNTIL NOV ALWAYS DEVALUABLE
+  rtc.setEpoch(1574770092); // SECS UNTIL NOV ALWAYS DEVALUABLE
   
   dateDay = rtc.getDay(); 
   dateMonth = rtc.getMonth(); 
@@ -304,7 +305,7 @@ void welcomeMessageNameUser(){
   oled.clearDisplay();
   oled.setTextColor(WHITE); 
   oled.setCursor (10, 30); 
-  oled.setTextSize(2);
+  oled.setTextSize(1);
   oled.print("Nombre:" + user_name + "-" + "ID:" + user_id_device);  
   oled.display();
   delay(5000);
@@ -319,7 +320,6 @@ void encoderReadPos() {
   newRight = knobRight.read();
   
   if (newLeft != positionLeft || newRight != positionRight) {
-    if(newLeft <= 100 || newRight <= 7){
          
       Serial.print("Left = ");
       Serial.print(newLeft);
@@ -342,7 +342,7 @@ void encoderReadPos() {
       oled.print(newRight);
 
       oled.display();
-    }
+    
   }  
 }
 
@@ -350,57 +350,50 @@ void encoderReadPos() {
 void matchEncoderPainLevel(){
 
   if(newRight == 10){
-    pain_level = "Uno";
-    name_body_part = "Ninguna";
-    drawCustomBitmap(logo_cara1_1);
-    printOledColorMessages(pain_level);
-    
+    pain_level = 0;
+    drawCustomBitmap(logo_cara0_1);
+    printOledPainLevelMessages(pain_level);
   }
 
   if(newRight == 20){
-    pain_level = "Dos";
-    name_body_part = "Cabeza";
-    drawCustomBitmap(logo_cara2_1);
-    printOledColorMessages(pain_level);
+    pain_level = 1;
+    drawCustomBitmap(logo_cara1_1);
+    printOledPainLevelMessages(pain_level);
      
   } 
   if(newRight == 30){
-    pain_level = "Tres";
-    name_body_part = "Cuello";
-    drawCustomBitmap(logo_cara3_1);
-    printOledColorMessages(pain_level);
- 
-    
+    pain_level = 2;
+    drawCustomBitmap(logo_cara2_1);
+    printOledPainLevelMessages(pain_level);
   }
   if(newRight == 40){
-    pain_level = "Cuatro";
-    name_body_part = "Busto";
-    drawCustomBitmap(logo_cara4_1);
-    printOledColorMessages(pain_level);
+    pain_level = 3;
+    drawCustomBitmap(logo_cara3_1);
+    printOledPainLevelMessages(pain_level);
 
   }
   if(newRight == 50){
-    pain_level = "Cinco";
-    name_body_part = "Abdomen";
-    drawCustomBitmap(logo_cara5_1);
-    printOledColorMessages(pain_level);
+    pain_level = 4;
+    drawCustomBitmap(logo_cara4_1);
+    printOledPainLevelMessages(pain_level);
     
   }
   if(newRight == 60){
-    pain_level = "Seis";
-    name_body_part = "Espalda baja";
-    drawCustomBitmap(logo_cara6_1);
-    printOledColorMessages(pain_level);
+    pain_level = 5;
+    drawCustomBitmap(logo_cara5_1);
+    printOledPainLevelMessages(pain_level);
     
   }
   if(newRight == 70){
-    pain_level = "Siete";
-    name_body_part = "Espalda";
+    pain_level = 6;
+    drawCustomBitmap(logo_cara6_1);
+    printOledPainLevelMessages(pain_level);
+  }  
+  if(newRight == 80){
+    pain_level = 7;
     drawCustomBitmap(logo_cara7_1);
-    printOledColorMessages(pain_level);
-    
+    printOledPainLevelMessages(pain_level);
   }
-  
 }
 
 // Custom Function - matchEncoderColor()
@@ -567,15 +560,15 @@ void writeHttpResponseInJson(){
         StaticJsonDocument<500> doc;
 
         // Counter of requests from the client
-        counterClicks();
+        counterWebClientRequest();
 
         // write json pairs
         doc["counter_registers_value"] = countRegisters;
-        doc["time-unixtime"] = unixSeg;
+        doc["unixtime"] = unixSeg;
         doc["date"] = date;
         doc["user_name"] = user_id_device;
         doc["temperature"] = hic;
-        doc["pain_level"] = newRight;
+        doc["pain_level"] = pain_level;
         doc["pain_location"] = name_body_part;
         doc["name_color"] = name_color;
         
@@ -624,10 +617,22 @@ void printWifiStatus() {
   Serial.print(rssi);
   Serial.println(" dBm");
   
+ //Print in oled temp results
+  oled.clearDisplay();
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 0);     
+  oled.setTextSize(1);
+  oled.print("La IP de Hilda device es:"); 
+  oled.setCursor (10, 30); 
+  oled.setTextSize(1);
+  oled.print(ip);  
+  oled.display();
+  delay(3000);
+  
 }
 
 // Custom Function - counterClicks()
-void counterClicks(){
+void counterWebClientRequest(){
   countRegisters++;
   delay(500);
   Serial.println(countRegisters);
@@ -646,6 +651,16 @@ void printOledColorMessages(String name_color){
   oled.display();
 }
 
+void printOledPainLevelMessages(int pain_level){
+  oled.clearDisplay();
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 0);       
+  oled.setCursor (20, 30); 
+  oled.setTextSize(1);
+  oled.print(pain_level);  
+  oled.display();
+}
+
 // Custom Function - drawBitmap()
 void drawCustomBitmap(uint8_t nameChart []){
 
@@ -657,4 +672,5 @@ void drawCustomBitmap(uint8_t nameChart []){
     (oled.height() - LOGO_HEIGHT) / 2,
     nameChart, LOGO_WIDTH, LOGO_HEIGHT, 1);
   oled.display();
+  delay(10);
 }

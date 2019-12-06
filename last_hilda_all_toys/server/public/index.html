@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>Hilda Device & Chart.js</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+  </head>
+
+  <body>
+
+    <style>
+      .table{
+        width: 100%;
+        background: #eeeeee;
+        line-height: 32px;
+        border: 1px solid black;
+      }
+      .bars { 
+        float: left;
+        height: 30px;
+        line-height: 30px;
+        border: 1px solid black;
+        padding-left: 10px;
+        padding-right: 10px;
+        background: #FFFF33;
+        color: #000000;
+        }
+      .row{
+        width: 100%;
+        clear: both;
+      }
+    </style>  
+     
+    <div align="center" style="background: #eeeeee; border: 1px solid black; padding: 10px;">
+      <h1>Hilda device data viewer</h1>
+      <form style="">
+        <select id="Addr0"></select> .
+        <select id="Addr1"></select> .
+        <select id="Addr2"></select> .
+        <select id="Addr3"></select> :
+        
+        <div style="padding-top: 10px;">
+          <button type="button" id="startData" style="height: 50px; width: 228px">Click here to start getting data</button>&nbsp;&nbsp;
+          <button type="button" id="stopData" style="height: 50px; width: 172px">Click here to stop </button><br>&nbsp;
+        </div>  
+      </form>
+
+      <div id="FailureStatus">
+        <h2>Status:</h2>
+      </div>
+
+    </div>
+
+    <div id="charts">
+      <canvas style="height: 50%; width: 50%;" id="myChart"></canvas>
+      
+    </div>
+    
+    <script>
+
+      //global vars
+      var myUrl1 = 'http://192.168.0.17';
+      var chart1 =[];
+  
+      //put data in fields
+      $(document).ready(function(){
+          //Populate the options for the IP address drop-down boxes.
+          for(j=0; j<256; j++){
+            for(i=0; i<4; i++){
+              $('#Addr'+i)
+                .append($("<option></option>")
+                .attr("value",j)
+                .text(j));
+              } 
+          }   
+        
+        //Set the default IP address in the drop down boxes.
+        $('#Addr0').val('10');
+        $('#Addr1').val('1');
+        $('#Addr2').val('1');
+        $('#Addr3').val('99');
+        
+      });
+    
+      //When the start button is clicked - get the data from the Arduino
+      $("#startData").click(function(){
+        $(document).ready(function(){
+          //function main init
+          chartIt();
+        });
+      });  
+      
+      //Get data
+      async function getMyDataAsync(){
+
+        //get the IP address from the drop-down boxes
+        var x0 = $('#Addr0 option:selected').text();
+        var x1 = $('#Addr1 option:selected').text();
+        var x2 = $('#Addr2 option:selected').text();
+        var x3 = $('#Addr3 option:selected').text();
+            
+        //Construct the URL of the Arduino Server we plan to connect to
+        //var myUrl = 'http://' + x0 + "." + x1 + "." + x2 + "." + x3 + "/";
+
+        const response = await fetch(myUrl1);
+        const data = await response.json();
+        console.log(data);   
+
+        const {pain_level, counter_registers_value} = data 
+        console.log(pain_level);
+
+        //send data
+        addData(chart1, counter_registers_value, pain_level);
+
+      }
+
+      //send data
+      async function addData(chart, label, data) {
+        
+        await getMyDataAsync();
+        
+          chart.data.labels.push(label);
+          chart.data.datasets.forEach((dataset) => {
+            dataset.data.push(data);
+          });
+          chart.update();
+        
+      }
+      
+      //create chart with data
+      async function chartIt(){
+        await getMyDataAsync();
+        var ctx = document.getElementById('myChart').getContext('2d');
+        chart1 = new Chart(ctx, {
+          // The type of chart we want to create
+          type: 'line',
+          // The data for our dataset
+          data: {
+              labels: [],
+              datasets: [{
+                  label: 'hi chart',
+                  backgroundColor: 'rgb(52, 73, 94)',
+                  borderColor: 'rgb(41, 128, 185)',
+                  data: [],
+              }]
+          },
+            // Configuration options go here
+          options: {}
+        }); 
+      }
+    </script>
+  </body>
+</html>
